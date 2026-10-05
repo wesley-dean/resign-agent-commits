@@ -87,14 +87,14 @@ jobs:
 
       - name: Verify deterministic build output
         run: |
-          mkdir -p "__RUNNER_TEMP__/first-build"
-          cp dist/*.bash "__RUNNER_TEMP__/first-build/"
+          mkdir -p "${RUNNER_TEMP}/first-build"
+          cp dist/*.bash "${RUNNER_TEMP}/first-build/"
           for artifact in dist/*.bash; do
             : >"$artifact.256"
           done
           make build VERSION=0.0.0-ci
           for artifact in dist/*.bash; do
-            cmp "__RUNNER_TEMP__/first-build/$(basename "$artifact")" "$artifact"
+            cmp "${RUNNER_TEMP}/first-build/$(basename "$artifact")" "$artifact"
             test -f "$artifact.sha256"
             test ! -e "$artifact.256"
           done
