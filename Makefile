@@ -82,11 +82,11 @@ $(LIST_SCRIPT): $(LIST_DEV)
 $(RESIGN_SCRIPT): $(RESIGN_DEV)
 	@tmp="$@.tmp"; trap 'rm -f "$$tmp"' EXIT; first=true; while IFS= read -r line || [[ -n "$$line" ]]; do if $$first; then printf '%s\n' "$$line"; first=false; continue; fi; [[ "$$line" =~ ^[[:space:]]*# ]] && continue; printf '%s\n' "$$line"; done <"$<" >"$$tmp"; chmod 0755 "$$tmp"; bash -n "$$tmp"; mv "$$tmp" "$@"; trap - EXIT
 
-$(LIST_MIN): $(LIST_SCRIPT) $(BASH_MINIFIER)
+$(LIST_MIN): $(LIST_SCRIPT)
 	@test -f "$(BASH_MINIFIER)" || { printf '%s\n' 'Missing build dependency vendor/bash-minifier.bash; run make deps or make all' >&2; exit 1; }
 	@tmp="$@.tmp"; trap 'rm -f "$$tmp"' EXIT; bash "$(BASH_MINIFIER)" -F <"$<" >"$$tmp"; chmod 0755 "$$tmp"; bash -n "$$tmp"; mv "$$tmp" "$@"; trap - EXIT
 
-$(RESIGN_MIN): $(RESIGN_SCRIPT) $(BASH_MINIFIER)
+$(RESIGN_MIN): $(RESIGN_SCRIPT)
 	@test -f "$(BASH_MINIFIER)" || { printf '%s\n' 'Missing build dependency vendor/bash-minifier.bash; run make deps or make all' >&2; exit 1; }
 	@tmp="$@.tmp"; trap 'rm -f "$$tmp"' EXIT; bash "$(BASH_MINIFIER)" -F <"$<" >"$$tmp"; chmod 0755 "$$tmp"; bash -n "$$tmp"; mv "$$tmp" "$@"; trap - EXIT
 
