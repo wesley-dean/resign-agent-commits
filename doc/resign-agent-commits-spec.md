@@ -95,4 +95,4 @@ The project does not promise that:
 - a GitHub token or signing key is protected from a hostile CI host;
 - signing resolves semantic merge conflicts;
 - concurrent remote changes will be retried automatically; or
-- bashlog is currently used by either runtime command.
+- bashlog is not currently used by either runtime command.

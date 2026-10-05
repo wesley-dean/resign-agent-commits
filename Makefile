@@ -70,10 +70,10 @@ define BUILD_DEV
 	} >"$$tmp"; chmod 0755 "$$tmp"; bash -n "$$tmp"; mv "$$tmp" "$@"; trap - EXIT
 endef
 
-$(LIST_DEV): FORCE $(LIST_SOURCE)
+$(LIST_DEV): $(LIST_SOURCE) FORCE
 	$(BUILD_DEV)
 
-$(RESIGN_DEV): FORCE $(RESIGN_SOURCE)
+$(RESIGN_DEV): $(RESIGN_SOURCE) FORCE
 	$(BUILD_DEV)
 
 $(LIST_SCRIPT): $(LIST_DEV)

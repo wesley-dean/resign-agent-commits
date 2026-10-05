@@ -44,7 +44,7 @@ jobs:
         run: |
           make deps-check
           test -f doc/adr/README.md
-          grep -Fq 'ADR-017: Generate ADR Navigation Ephemerally' doc/adr/README.md
+          grep -Fq 'ADR-018: Two-Command Repository Discovery' doc/adr/README.md
           git check-ignore -q doc/adr/README.md
           test -f doc/reference/index.html
           git check-ignore -q doc/reference/index.html
