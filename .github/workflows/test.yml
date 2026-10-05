@@ -128,7 +128,7 @@ jobs:
 
       - name: Publish Bats test results
         uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2
-        if: always()
+        if: always() && (steps.bats.outcome == 'success' || steps.bats.outcome == 'failure')
         with:
           name: Bats tests
           path: test-results/*.xml
