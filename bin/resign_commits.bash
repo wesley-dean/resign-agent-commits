@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
-## @file src/resign_commits.bash
+## @file bin/resign_commits.bash
 ## @brief Rewrites eligible agent-owned branch suffixes with verified SSH commit signatures.
 ## @details
 ## This maintained executable implements one half of the resign-agent-commits

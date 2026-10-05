@@ -2,7 +2,7 @@ SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 
 PROJECT_NAME := resign-agent-commits
-SOURCE_DIR := src
+SOURCE_DIR := bin
 LIST_SOURCE := $(SOURCE_DIR)/list_repos.bash
 RESIGN_SOURCE := $(SOURCE_DIR)/resign_commits.bash
 SOURCE_SCRIPTS := $(LIST_SOURCE) $(RESIGN_SOURCE)
