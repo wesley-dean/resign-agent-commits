@@ -23,7 +23,7 @@ make_temp_repo() {
   git init --quiet --bare "${root}/${name}.git"
   git init --quiet "${root}/work"
   (
-    cd "${root}/work"
+    cd "${root}/work" || exit 1
     git config user.name "Test Agent"
     git config user.email "agent@example.test"
     printf '%s\n' initial >README.md

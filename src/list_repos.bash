@@ -1117,7 +1117,7 @@ list_repositories() {
   args=(
     repo list "${OWNER}"
     --limit "${REPO_LIMIT}"
-    --json nameWithOwner,isArchived
+    --json "nameWithOwner,isArchived"
   )
 
   if [[ "${INCLUDE_FORKS}" != "true" ]]; then
