@@ -37,7 +37,7 @@ REFERENCE_DOC_DIR := doc/reference
 TEST_RESULTS_DIR := test-results
 
 VERSION ?= 0.0.0-dev
-BUILD_COMMIT ?= $(shell commit="$$(git rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')"; if git rev-parse --is-inside-work-tree >/dev/null 2>&1 && [[ -n "$$(git status --porcelain --untracked-files=normal -- Makefile dependencies.txt src tests doc .github 2>/dev/null)" ]]; then printf '%s-dirty' "$$commit"; else printf '%s' "$$commit"; fi)
+BUILD_COMMIT ?= $(shell commit="$$(git rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')"; if git rev-parse --is-inside-work-tree >/dev/null 2>&1 && [[ -n "$$(git status --porcelain --untracked-files=normal -- Makefile dependencies.txt bin tests doc .github 2>/dev/null)" ]]; then printf '%s-dirty' "$$commit"; else printf '%s' "$$commit"; fi)
 BUILD_DATE ?= $(shell git show -s --format=%cI HEAD 2>/dev/null || printf 'unknown')
 SHFMT_ARGUMENTS := -i 2 -bn -ci -sr -kp
 
@@ -70,10 +70,10 @@ define BUILD_DEV
 	} >"$$tmp"; chmod 0755 "$$tmp"; bash -n "$$tmp"; mv "$$tmp" "$@"; trap - EXIT
 endef
 
-$(LIST_DEV): $(LIST_SOURCE)
+$(LIST_DEV): FORCE $(LIST_SOURCE)
 	$(BUILD_DEV)
 
-$(RESIGN_DEV): $(RESIGN_SOURCE)
+$(RESIGN_DEV): FORCE $(RESIGN_SOURCE)
 	$(BUILD_DEV)
 
 $(LIST_SCRIPT): $(LIST_DEV)
