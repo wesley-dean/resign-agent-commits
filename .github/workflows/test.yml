@@ -24,7 +24,7 @@ jobs:
       - name: Install system development tools
         run: |
           sudo apt-get update
-          sudo apt-get install --yes bats curl doxygen graphviz make shellcheck shfmt
+          sudo apt-get install --yes bats curl doxygen gh graphviz make shellcheck shfmt
 
       - name: Verify build does not acquire missing dependencies
         run: |
@@ -115,6 +115,17 @@ jobs:
           test -f doc/reference/index.html
           git check-ignore -q doc/reference/index.html
           test -z "$(git status --short)"
+
+      - name: Run live GitHub dry-run integration smoke test
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TEST_BRANCH: ${{ github.head_ref }}
+        run: |
+          tests/github-integration.bash \
+            dist/list_repos.bash \
+            dist/resign_commits.bash \
+            "${TEST_BRANCH}"
 
       - name: Run Bats tests for every artifact flavor
         id: bats
