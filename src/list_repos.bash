@@ -99,18 +99,6 @@ Options:
   --branch-pattern PATTERN
       Deprecated single-pattern alias retained for compatibility.
 
-  --agent-name NAME
-      Accepted for configuration compatibility with resign_commits.bash.
-
-  --agent-email EMAIL
-      Accepted for configuration compatibility with resign_commits.bash.
-
-  --signing-key FILE
-      Accepted for configuration compatibility with resign_commits.bash.
-
-  --signing-public-key FILE
-      Accepted for configuration compatibility with resign_commits.bash.
-
   --limit NUMBER
       Maximum number of repositories returned.  Default: ${DEFAULT_REPO_LIMIT}
 
@@ -137,10 +125,6 @@ Environment variables:
   GH_TOKEN
   BRANCH_PATTERNS
   BRANCH_PATTERN
-  AGENT_NAME
-  AGENT_EMAIL
-  SIGNING_KEY_PATH
-  SIGNING_PUBLIC_KEY_PATH
   REPO_LIMIT
   INCLUDE_ARCHIVED
   INCLUDE_FORKS
@@ -490,8 +474,7 @@ capture_process_environment() {
 
   for name in \
     ENV_FILE OWNER GIT_HOST GIT_USER GIT_TRANSPORT GH_TOKEN BRANCH_PATTERNS BRANCH_PATTERN \
-    AGENT_NAME AGENT_EMAIL SIGNING_KEY_PATH SIGNING_PUBLIC_KEY_PATH REPO_LIMIT \
-    INCLUDE_ARCHIVED INCLUDE_FORKS VERBOSE; do
+    REPO_LIMIT INCLUDE_ARCHIVED INCLUDE_FORKS VERBOSE; do
     printf -v "PROCESS_${name}_SET" '%s' "false"
     printf -v "PROCESS_${name}" '%s' ""
 
@@ -535,10 +518,6 @@ set_defaults() {
   GH_TOKEN=""
   BRANCH_PATTERNS=""
   BRANCH_PATTERN=""
-  AGENT_NAME=""
-  AGENT_EMAIL=""
-  SIGNING_KEY_PATH=""
-  SIGNING_PUBLIC_KEY_PATH=""
   REPO_LIMIT="${DEFAULT_REPO_LIMIT}"
   INCLUDE_ARCHIVED="${DEFAULT_INCLUDE_ARCHIVED}"
   INCLUDE_FORKS="${DEFAULT_INCLUDE_FORKS}"
@@ -657,11 +636,10 @@ load_env_file() {
 
     case "${key}" in
       OWNER | GIT_HOST | GIT_USER | GIT_TRANSPORT | GH_TOKEN | BRANCH_PATTERNS | BRANCH_PATTERN | \
-        AGENT_NAME | AGENT_EMAIL | SIGNING_KEY_PATH | SIGNING_PUBLIC_KEY_PATH | \
         REPO_LIMIT | INCLUDE_ARCHIVED | INCLUDE_FORKS | VERBOSE)
         printf -v "${key}" '%s' "${value}"
         ;;
-      DRY_RUN)
+      AGENT_NAME | AGENT_EMAIL | SIGNING_KEY_PATH | SIGNING_PUBLIC_KEY_PATH | DRY_RUN)
         ;;
       *)
         warn "Ignoring unknown environment-file variable: ${key}"
@@ -701,8 +679,7 @@ apply_process_environment() {
 
   for name in \
     OWNER GIT_HOST GIT_USER GIT_TRANSPORT GH_TOKEN BRANCH_PATTERNS BRANCH_PATTERN \
-    AGENT_NAME AGENT_EMAIL SIGNING_KEY_PATH SIGNING_PUBLIC_KEY_PATH REPO_LIMIT \
-    INCLUDE_ARCHIVED INCLUDE_FORKS VERBOSE; do
+    REPO_LIMIT INCLUDE_ARCHIVED INCLUDE_FORKS VERBOSE; do
     set_variable="PROCESS_${name}_SET"
     value_variable="PROCESS_${name}"
 
@@ -796,38 +773,6 @@ parse_options() {
         ;;
       --branch-pattern=*)
         BRANCH_PATTERN="${1#*=}"
-        ;;
-      --agent-name)
-        shift
-        [[ $# -gt 0 ]] || die "--agent-name requires a value"
-        AGENT_NAME="$1"
-        ;;
-      --agent-name=*)
-        AGENT_NAME="${1#*=}"
-        ;;
-      --agent-email)
-        shift
-        [[ $# -gt 0 ]] || die "--agent-email requires a value"
-        AGENT_EMAIL="$1"
-        ;;
-      --agent-email=*)
-        AGENT_EMAIL="${1#*=}"
-        ;;
-      --signing-key)
-        shift
-        [[ $# -gt 0 ]] || die "--signing-key requires a value"
-        SIGNING_KEY_PATH="$1"
-        ;;
-      --signing-key=*)
-        SIGNING_KEY_PATH="${1#*=}"
-        ;;
-      --signing-public-key)
-        shift
-        [[ $# -gt 0 ]] || die "--signing-public-key requires a value"
-        SIGNING_PUBLIC_KEY_PATH="$1"
-        ;;
-      --signing-public-key=*)
-        SIGNING_PUBLIC_KEY_PATH="${1#*=}"
         ;;
       --limit)
         shift
