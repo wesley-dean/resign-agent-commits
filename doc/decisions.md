@@ -1,6 +1,6 @@
 # Architectural Decisions
 
-This document is a concise map of template-bash's Architecture Decision Records.
+This document is a concise map of resign-agent-commits Architecture Decision Records.
 It is a discovery aid, not a substitute for the ADR corpus.  When a summary and a
 governing ADR appear to conflict, read the ADR and surface the conflict rather
 than silently choosing the shorter wording.
@@ -181,3 +181,17 @@ Documentation generation stays offline, graph-free for routine ADR navigation,
 and independent of template runtime and release artifacts.
 
 See [ADR-017](adr/ADR-017-generate-adr-navigation-ephemerally.md).
+
+
+### ADR-018: Two-Command Repository Discovery and Commit Re-Signing Workflow
+
+The project ships separate repository-discovery and commit-signing commands that
+compose through newline-delimited repository identifiers.  Branch names are
+routing signals only; the signer independently verifies repository state and
+limits rewriting to the contiguous single-parent suffix owned by the configured
+agent identity.  Remote-tip race checks, exact force-with-lease pushes, verified
+SSH signatures, and read-only dry-run behavior constrain mutation authority.
+Builds produce three flavors of each command plus SHA-256 companions, while
+bashlog is fetched now but deliberately reserved for separate backlog work.
+
+See [ADR-018](adr/ADR-018-two-command-repository-discovery-and-commit-resigning-workflow.md).

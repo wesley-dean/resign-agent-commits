@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash
+
 set -euo pipefail
 
-: "${BASH_STARTER_ARTIFACT:?BASH_STARTER_ARTIFACT must identify the artifact under test}"
+: "${RAC_ARTIFACT:?RAC_ARTIFACT is required}: RAC_ARTIFACT is required"
 
-bash -n "${BASH_STARTER_ARTIFACT}"
-"${BASH_STARTER_ARTIFACT}" --help >/dev/null
-"${BASH_STARTER_ARTIFACT}" version >/dev/null
-"${BASH_STARTER_ARTIFACT}" plugins | grep -F 'noop' >/dev/null
-"${BASH_STARTER_ARTIFACT}" run noop
+bash -n "$RAC_ARTIFACT"
+"$RAC_ARTIFACT" --help >/dev/null
