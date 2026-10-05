@@ -294,7 +294,8 @@ setup() {
     git commit --quiet -am human
     AGENT_EMAIL=agent@example.test
     run find_agent_suffix_base "$base" HEAD
-    [ "$status" -ne 0 ] || [ "$output" = "$base" ]
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
   )
 }
 

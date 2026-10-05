@@ -1325,9 +1325,10 @@ verify_commit() {
 ## Warnings are written for invalid signatures or unexpected history.
 ##
 ## @returns One boundary SHA followed by one newline when eligible history exists.
+## Nothing is written when the branch tip is not agent-owned.
 ##
-## @retval 0 An eligible suffix boundary was found.
-## @retval 1 The branch tip is not agent-owned or otherwise ineligible.
+## @retval 0 Suffix evaluation completed; output is empty when no eligible agent suffix exists.
+## @retval 1 An existing agent signature failed verification.
 ## @note Non-zero statuses from subordinate commands may be propagated when
 ## they are not explicitly translated by this function.
 ##
