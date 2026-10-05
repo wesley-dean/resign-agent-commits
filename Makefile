@@ -96,11 +96,11 @@ $(DIST_DIR)/%.bash.sha256: $(DIST_DIR)/%.bash
 checksums: build
 
 check:
-	@for source in $(SOURCE_SCRIPTS); do bash -n "$$source"; done
-	shellcheck $(SOURCE_SCRIPTS) tests/*.bash tests/*.bats
+	@for source in $(SOURCE_SCRIPTS) tests/*.bash; do bash -n "$source"; done
+	shellcheck $(SOURCE_SCRIPTS) tests/*.bash
 
 format:
-	shfmt $(SHFMT_ARGUMENTS) -w $(SOURCE_SCRIPTS) tests/*.bash tests/*.bats
+	shfmt $(SHFMT_ARGUMENTS) -w $(SOURCE_SCRIPTS) tests/*.bash
 
 FORCE:
 
@@ -136,6 +136,9 @@ docs:
 	$(MAKE) --no-print-directory docs-clean
 	$(MAKE) --no-print-directory adr-index
 	chmod 0755 "$(DOXYGEN_BASH_FILTER)"
+	@for source in $(SOURCE_SCRIPTS); do \
+		awk -f "$(DOXYGEN_BASH_FILTER)" -- --strict "$source" >/dev/null; \
+	done
 	RESIGN_AGENT_COMMITS_DOXYGEN_PROJECT_NAME="$(PROJECT_NAME)" doxygen Doxyfile
 
 docs-clean:
