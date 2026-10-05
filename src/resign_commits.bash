@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
-## @file bin/resign_commits.bash
+## @file src/resign_commits.bash
 ## @brief Rewrites eligible agent-owned branch suffixes with verified SSH commit signatures.
 ## @details
 ## This maintained executable implements one half of the resign-agent-commits
@@ -17,7 +17,7 @@
 ##
 ## @par Examples
 ## @code
-## printf '%s\n' wesley-dean/example | ./bin/resign_commits.bash --dry-run
+## printf '%s\n' wesley-dean/example | ./src/resign_commits.bash --dry-run
 ## @endcode
 
 set -Eeuo pipefail

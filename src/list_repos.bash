@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
-## @file bin/list_repos.bash
+## @file src/list_repos.bash
 ## @brief Discovers repositories that contain branches eligible for the signing workflow.
 ## @details
 ## This maintained executable implements one half of the resign-agent-commits
@@ -17,7 +17,7 @@
 ##
 ## @par Examples
 ## @code
-## OWNER=wesley-dean ./bin/list_repos.bash
+## OWNER=wesley-dean ./src/list_repos.bash
 ## @endcode
 
 set -Eeuo pipefail

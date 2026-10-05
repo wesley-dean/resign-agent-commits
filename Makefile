@@ -2,7 +2,7 @@ SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 
 PROJECT_NAME := resign-agent-commits
-SOURCE_DIR := bin
+SOURCE_DIR := src
 LIST_SOURCE := $(SOURCE_DIR)/list_repos.bash
 RESIGN_SOURCE := $(SOURCE_DIR)/resign_commits.bash
 SOURCE_SCRIPTS := $(LIST_SOURCE) $(RESIGN_SOURCE)
@@ -37,7 +37,7 @@ REFERENCE_DOC_DIR := doc/reference
 TEST_RESULTS_DIR := test-results
 
 VERSION ?= 0.0.0-dev
-BUILD_COMMIT ?= $(shell commit="$$(git rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')"; if git rev-parse --is-inside-work-tree >/dev/null 2>&1 && [[ -n "$$(git status --porcelain --untracked-files=normal -- Makefile dependencies.txt bin tests doc .github 2>/dev/null)" ]]; then printf '%s-dirty' "$$commit"; else printf '%s' "$$commit"; fi)
+BUILD_COMMIT ?= $(shell commit="$$(git rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')"; if git rev-parse --is-inside-work-tree >/dev/null 2>&1 && [[ -n "$$(git status --porcelain --untracked-files=normal -- Makefile dependencies.txt src tests doc .github 2>/dev/null)" ]]; then printf '%s-dirty' "$$commit"; else printf '%s' "$$commit"; fi)
 BUILD_DATE ?= $(shell git show -s --format=%cI HEAD 2>/dev/null || printf 'unknown')
 SHFMT_ARGUMENTS := -i 2 -bn -ci -sr -kp
 

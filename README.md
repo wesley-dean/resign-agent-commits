@@ -19,16 +19,16 @@ before push, and updates use exact force-with-lease semantics.
 The normal composition is:
 
 ```bash
-bin/list_repos.bash |
-  bin/resign_commits.bash
+src/list_repos.bash |
+  src/resign_commits.bash
 ```
 
 Dry-run mode performs discovery and policy evaluation without rewriting or
 pushing:
 
 ```bash
-bin/list_repos.bash |
-  bin/resign_commits.bash --dry-run
+src/list_repos.bash |
+  src/resign_commits.bash --dry-run
 ```
 
 See [the specification](doc/resign-agent-commits-spec.md) and
