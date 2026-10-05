@@ -4,6 +4,7 @@ load test_helper.bash
 
 setup() {
   setup_artifact
+  VERBOSE=false
 }
 
 @test "resign_commits defines usage" {
