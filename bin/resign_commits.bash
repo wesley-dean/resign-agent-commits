@@ -17,7 +17,7 @@
 ##
 ## @par Examples
 ## @code
-## printf '%s\n' wesley-dean/example | ./src/resign_commits.bash --dry-run
+## printf '%s\n' wesley-dean/example | ./bin/resign_commits.bash --dry-run
 ## @endcode
 
 set -Eeuo pipefail
@@ -34,29 +34,28 @@ DEFAULT_DRY_RUN="false"
 DEFAULT_VERBOSE="false"
 
 ## @fn usage()
-## @brief Writes the command's complete usage and configuration contract.
+## @brief Writes command usage and configuration guidance.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Human-readable usage text.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
 ## @returns Human-readable usage text.
 ##
 ## @retval 0 Usage text was written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## usage
 ## @endcode
 usage() {
   cat <<USAGE
@@ -147,29 +146,30 @@ USAGE
 }
 
 ## @fn log()
-## @brief Emits a progress message used by the signing command.
+## @brief Writes one progress message to standard output.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param args[] Message words to render as one progress record.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## The supplied progress message followed by a newline.
+## The supplied message followed by one newline.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
-## @returns The supplied progress message followed by a newline.
+## @returns The supplied message followed by one newline.
 ##
 ## @retval 0 The message was written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## log 'Repository: wesley-dean/example'
 ## @endcode
 log() {
   printf '%s
@@ -177,29 +177,30 @@ log() {
 }
 
 ## @fn debug()
-## @brief Emits a diagnostic only when verbose mode is enabled.
+## @brief Writes a debug diagnostic when verbose mode is enabled.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param args[] Message words to render as one diagnostic.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## A DEBUG diagnostic when VERBOSE is true.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 The diagnostic was emitted or verbose mode was disabled.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## VERBOSE=true; debug 'branch discovered'
 ## @endcode
 debug() {
   if [[ "${VERBOSE}" == "true" ]]; then
@@ -209,29 +210,30 @@ debug() {
 }
 
 ## @fn warn()
-## @brief Emits a warning diagnostic to standard error.
+## @brief Writes one warning diagnostic to standard error.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param args[] Message words to render as one warning.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## A WARNING diagnostic followed by one newline.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 The diagnostic was written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 The warning was written.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## warn 'branch changed during discovery'
 ## @endcode
 warn() {
   printf 'WARNING: %s
@@ -239,29 +241,30 @@ warn() {
 }
 
 ## @fn error()
-## @brief Emits an error diagnostic to standard error.
+## @brief Writes one error diagnostic to standard error.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param args[] Message words to render as one error.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## An ERROR diagnostic followed by one newline.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 The diagnostic was written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 The error was written.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## error 'clone failed'
 ## @endcode
 error() {
   printf 'ERROR: %s
@@ -269,29 +272,30 @@ error() {
 }
 
 ## @fn die()
-## @brief Emits an error diagnostic and terminates the command with failure.
+## @brief Reports an error and terminates the current command.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param args[] Message words passed to error().
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## An ERROR diagnostic is written before termination.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 1 The command terminates after reporting the error.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## die 'invalid configuration'
 ## @endcode
 die() {
   error "$*"
@@ -299,29 +303,30 @@ die() {
 }
 
 ## @fn trim()
-## @brief Removes leading and trailing shell whitespace without evaluating the value.
+## @brief Removes leading and trailing shell whitespace from a value.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param value Value to normalize without evaluation.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## The trimmed value followed by a newline.
+## The trimmed value followed by one newline.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
-## @returns The trimmed value followed by a newline.
+## @returns One normalized string followed by one newline.
 ##
-## @retval 0 The trimmed value was written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 The normalized value was written.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## trim '  value  '
 ## @endcode
 trim() {
   local value="$1"
@@ -334,29 +339,30 @@ trim() {
 }
 
 ## @fn strip_env_quotes()
-## @brief Removes one matching outer quote pair from a configuration value.
+## @brief Removes one matching pair of outer quotes from a value.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param value Value whose outer quote pair may be removed.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## The normalized value followed by a newline.
+## The normalized value followed by one newline.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
-## @returns The normalized value followed by a newline.
+## @returns One normalized string followed by one newline.
 ##
 ## @retval 0 The normalized value was written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## strip_env_quotes '"value"'
 ## @endcode
 strip_env_quotes() {
   local value="$1"
@@ -375,119 +381,125 @@ strip_env_quotes() {
 }
 
 ## @fn valid_owner()
-## @brief Validates the restricted repository-owner grammar accepted by the tool.
+## @brief Validates the restricted repository-owner grammar.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param owner Repository owner token to validate.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 The owner is valid.
-## @retval 1 The owner is invalid.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 The owner token is valid.
+## @retval 1 The owner token is invalid.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## valid_owner wesley-dean
 ## @endcode
 valid_owner() {
   [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9-]*$ ]]
 }
 
 ## @fn valid_repository_name()
-## @brief Validates the restricted repository-name grammar accepted by the signer.
+## @brief Validates the restricted repository-name grammar.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param name Repository name token to validate.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 The repository name is valid.
 ## @retval 1 The repository name is invalid.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## valid_repository_name example-repo
 ## @endcode
 valid_repository_name() {
   [[ "$1" =~ ^[A-Za-z0-9._-]+$ ]]
 }
 
 ## @fn valid_git_host()
-## @brief Validates the restricted Git host grammar accepted by the tools.
+## @brief Validates the restricted Git host grammar.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param host Git host token to validate.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 The host is valid.
-## @retval 1 The host is invalid.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 The host token is valid.
+## @retval 1 The host token is invalid.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## valid_git_host github.com
 ## @endcode
 valid_git_host() {
   [[ "$1" =~ ^[A-Za-z0-9.-]+$ ]]
 }
 
 ## @fn report_result()
-## @brief Formats one status record for the signing report.
+## @brief Writes one aligned branch or repository result record.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param status Result status token.
+## @param subject Branch or repository subject.
+## @param detail Optional explanatory detail.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## One aligned result record followed by a newline.
+## One aligned result record followed by one newline.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
-## @returns One aligned result record followed by a newline.
+## @returns One human-readable result record.
 ##
 ## @retval 0 The result record was written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## report_result SIGNED ai/example 'old -> new'
 ## @endcode
 report_result() {
   local status="$1"
@@ -502,30 +514,31 @@ report_result() {
 }
 
 ## @fn is_true_or_false()
-## @brief Validates boolean configuration tokens.
+## @brief Validates an exact boolean configuration token.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param value Candidate boolean token.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 The value is exactly true or false.
-## @retval 1 The value is not accepted.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 1 The value is not an accepted boolean token.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## is_true_or_false true
 ## @endcode
 is_true_or_false() {
   case "$1" in
@@ -539,29 +552,30 @@ is_true_or_false() {
 }
 
 ## @fn load_env_file()
-## @brief Parses the supported non-executable environment-file grammar and applies recognized keys.
+## @brief Parses supported assignments from a non-executable environment file.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param file Readable environment-file path.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Warnings or errors are written for unsupported or invalid entries.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 The file was parsed successfully.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## load_env_file ./signer.env
 ## @endcode
 load_env_file() {
   local file="$1"
@@ -601,29 +615,28 @@ load_env_file() {
 }
 
 ## @fn capture_process_environment()
-## @brief Captures whether supported process-environment variables were explicitly set.
+## @brief Captures explicitly set process-environment configuration.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 Process configuration was captured.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## capture_process_environment
 ## @endcode
 capture_process_environment() {
   local name
@@ -642,29 +655,28 @@ capture_process_environment() {
 }
 
 ## @fn apply_process_environment()
-## @brief Applies captured process configuration over values loaded from the environment file.
+## @brief Applies captured process configuration over lower-precedence values.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 Captured values were applied.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 Captured process values were applied.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## apply_process_environment
 ## @endcode
 apply_process_environment() {
   local name
@@ -684,29 +696,30 @@ apply_process_environment() {
 }
 
 ## @fn find_env_file_argument()
-## @brief Resolves the environment-file selector before loading lower-precedence configuration.
+## @brief Resolves the environment-file selector before configuration loading.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param args[] Command-line arguments to scan for --env-file.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## An error is written if --env-file lacks a value.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 The selector was resolved.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 The environment-file selector was resolved.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## find_env_file_argument --env-file ./signer.env
 ## @endcode
 find_env_file_argument() {
   local argument
@@ -743,29 +756,30 @@ find_env_file_argument() {
 }
 
 ## @fn parse_options()
-## @brief Parses command-line options without evaluating caller-controlled text.
+## @brief Parses supported command-line options without evaluating input.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param args[] Command-line arguments to parse.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## Nothing is written to STDOUT except when --help is selected.
+## Usage text is written only when --help is selected.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## An error is written for invalid or incomplete options.
 ##
-## @returns Nothing is written to STDOUT except when --help is selected.
+## @returns Nothing is normally written to STDOUT.
 ##
 ## @retval 0 Options were parsed or help was written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## parse_options --owner wesley-dean
 ## @endcode
 parse_options() {
   while (($#)); do
@@ -886,29 +900,28 @@ parse_options() {
 }
 
 ## @fn prepare_branch_patterns()
-## @brief Validates the comma-separated configured ref globs and expands them into an array.
+## @brief Validates and expands configured comma-separated branch patterns.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## An error is written when a pattern is empty or unsafe.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 At least one safe branch pattern was prepared.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## BRANCH_PATTERNS='agent/*,ai/*'; prepare_branch_patterns
 ## @endcode
 prepare_branch_patterns() {
   local raw_patterns
@@ -943,29 +956,28 @@ prepare_branch_patterns() {
 }
 
 ## @fn branch_ref_arguments()
-## @brief Expands configured branch patterns to refs/heads globs suitable for Git.
+## @brief Writes configured branch patterns as fully qualified Git ref globs.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## One fully qualified ref glob per line.
+## One refs/heads glob per configured pattern.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
-## @returns One fully qualified ref glob per line.
+## @returns Zero or more newline-delimited Git ref globs.
 ##
 ## @retval 0 Ref arguments were written.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## branch_ref_arguments
 ## @endcode
 branch_ref_arguments() {
   local pattern
@@ -976,29 +988,28 @@ branch_ref_arguments() {
 }
 
 ## @fn validate_configuration()
-## @brief Validates required values, booleans, transports, files, and command dependencies before remote work.
+## @brief Validates signing configuration before repository processing.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## An error is written when required state is invalid.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 Configuration is valid.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 Signing configuration is valid.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## validate_configuration
 ## @endcode
 validate_configuration() {
   command -v git >/dev/null 2>&1 || die "git is required"
@@ -1034,29 +1045,28 @@ validate_configuration() {
 }
 
 ## @fn read_repositories_from_stdin()
-## @brief Reads newline-delimited repository identifiers from standard input when input is piped.
+## @brief Reads newline-delimited repository identifiers from piped input.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Zero or more repository identifiers, one per line.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 Input was consumed.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 Input was consumed or STDIN was a terminal.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## printf '%s\n' wesley-dean/example | read_repositories_from_stdin
 ## @endcode
 read_repositories_from_stdin() {
   local line
@@ -1074,32 +1084,33 @@ read_repositories_from_stdin() {
 }
 
 ## @fn normalize_repository()
-## @brief Validates and normalizes one repository identifier to OWNER/NAME form.
+## @brief Validates and normalizes one repository identifier.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param repository OWNER/NAME or unqualified repository identifier.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## The normalized OWNER/NAME value followed by a newline.
+## The normalized OWNER/NAME value on success.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Nothing is intentionally written to STDERR.
 ##
-## @returns The normalized OWNER/NAME value followed by a newline.
+## @returns One normalized repository identifier followed by one newline.
 ##
 ## @retval 0 The repository is valid.
-## @retval 1 The repository is outside the configured owner.
-## @retval 2 An unqualified name was supplied without OWNER.
-## @retval 3 The repository syntax is invalid.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 1 The repository is outside configured OWNER.
+## @retval 2 An unqualified name lacks OWNER.
+## @retval 3 Repository syntax is invalid.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## OWNER=wesley-dean; normalize_repository example
 ## @endcode
 normalize_repository() {
   local repository="$1"
@@ -1129,29 +1140,28 @@ normalize_repository() {
 }
 
 ## @fn prepare_repositories()
-## @brief Normalizes, owner-checks, and deduplicates all supplied repository identifiers.
+## @brief Normalizes, owner-checks, and deduplicates repository inputs.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Rejected repositories and verbose duplicate diagnostics may be written.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 Repository inputs were prepared.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 Repository inputs were processed.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## REPOSITORIES=(example); prepare_repositories
 ## @endcode
 prepare_repositories() {
   local input
@@ -1193,29 +1203,30 @@ prepare_repositories() {
 }
 
 ## @fn default_branch_for()
-## @brief Resolves the remote HEAD symbolic ref to the repository default branch.
+## @brief Resolves a remote repository's default branch.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param remote Git remote URL or path.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## The default branch name followed by a newline when available.
+## The default branch name when the remote advertises one.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Git failures may be written by subordinate commands.
 ##
-## @returns The default branch name followed by a newline when available.
+## @returns Zero or one branch name followed by a newline.
 ##
-## @retval 0 The default branch was resolved.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 Remote HEAD inspection completed.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## default_branch_for ./example.git
 ## @endcode
 default_branch_for() {
   local remote="$1"
@@ -1231,30 +1242,31 @@ default_branch_for() {
 }
 
 ## @fn commit_has_signature()
-## @brief Tests whether a commit object contains a Git signature header.
+## @brief Tests whether a commit object contains a signature header.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param commit Commit object name or SHA.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Git object lookup failures may be written.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 The commit contains a signature.
-## @retval 1 The commit does not contain a signature.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 1 No signature header was found.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## commit_has_signature HEAD
 ## @endcode
 commit_has_signature() {
   local commit="$1"
@@ -1264,29 +1276,30 @@ commit_has_signature() {
 }
 
 ## @fn verify_commit()
-## @brief Asks Git to verify one commit using the configured SSH allowed-signers file.
+## @brief Verifies one commit signature using configured Git trust state.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param commit Commit object name or SHA.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Verification diagnostics are intentionally suppressed.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 Git verified the signature.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 Git verified the commit signature.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## verify_commit HEAD
 ## @endcode
 verify_commit() {
   local commit="$1"
@@ -1295,29 +1308,32 @@ verify_commit() {
 }
 
 ## @fn find_agent_suffix_base()
-## @brief Walks backward from a branch tip and identifies the base of the contiguous single-parent agent-owned suffix.
+## @brief Finds the base of the contiguous agent-owned branch-tip suffix.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param base Merge-base SHA that bounds unique branch history.
+## @param head Branch-tip SHA to inspect.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## The boundary commit SHA followed by a newline when a suffix exists.
+## The boundary commit SHA when an eligible suffix exists.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Warnings are written for invalid signatures or unexpected history.
 ##
-## @returns The boundary commit SHA followed by a newline when a suffix exists.
+## @returns One boundary SHA followed by one newline when eligible history exists.
 ##
-## @retval 0 A signing boundary was identified.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 An eligible suffix boundary was found.
+## @retval 1 The branch tip is not agent-owned or otherwise ineligible.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## find_agent_suffix_base BASE HEAD
 ## @endcode
 find_agent_suffix_base() {
   local base="$1"
@@ -1364,30 +1380,32 @@ find_agent_suffix_base() {
 }
 
 ## @fn suffix_needs_signing()
-## @brief Inspects an eligible suffix and detects whether any commit still lacks a signature.
+## @brief Tests whether an eligible suffix contains any unsigned commit.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param base Boundary commit SHA.
+## @param head Eligible branch-tip SHA.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Git object failures may be written by subordinate commands.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 At least one commit needs signing.
-## @retval 1 Every eligible commit is already signed.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 At least one eligible commit is unsigned.
+## @retval 1 Every eligible commit has a signature header.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## suffix_needs_signing BASE HEAD
 ## @endcode
 suffix_needs_signing() {
   local base="$1"
@@ -1405,30 +1423,31 @@ suffix_needs_signing() {
 }
 
 ## @fn verify_rewritten_history()
-## @brief Verifies that every rewritten commit above the boundary contains a valid signature.
+## @brief Verifies signatures across every rewritten commit above a boundary.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param base Boundary commit SHA below rewritten history.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Verification diagnostics are suppressed by verify_commit().
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 Every rewritten commit verified.
-## @retval 1 At least one rewritten commit did not verify.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 1 A rewritten commit was unsigned or failed verification.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## verify_rewritten_history BASE
 ## @endcode
 verify_rewritten_history() {
   local base="$1"
@@ -1442,29 +1461,33 @@ verify_rewritten_history() {
 }
 
 ## @fn process_branch()
-## @brief Applies ownership, boundary, signature, race, dry-run, rewrite, verification, and lease checks to one branch.
+## @brief Evaluates and optionally re-signs one matching remote branch.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param repository Normalized OWNER/NAME repository identifier.
+## @param default_branch Repository default branch name.
+## @param branch Matching branch name.
+## @param expected_head Remote branch SHA observed during discovery.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## Human-readable branch progress and result records.
+## Branch progress and classification records.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Warnings and errors describe races or policy failures.
 ##
-## @returns Human-readable branch progress and result records.
+## @returns Human-readable branch processing output.
 ##
 ## @retval 0 Branch processing completed, including safe skips.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## process_branch owner/repo main ai/example HEAD_SHA
 ## @endcode
 process_branch() {
   local repository="$1"
@@ -1580,29 +1603,30 @@ process_branch() {
 }
 
 ## @fn process_repository()
-## @brief Performs pre-clone discovery and processes every configured matching branch in one repository.
+## @brief Discovers and processes configured matching branches in one repository.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param repository Normalized OWNER/NAME repository identifier.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
-## Human-readable repository progress and branch results.
+## Repository progress and branch classification records.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Repository and branch failures are reported as diagnostics.
 ##
-## @returns Human-readable repository progress and branch results.
+## @returns Human-readable repository processing output.
 ##
 ## @retval 0 Repository processing completed, including safe skips.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## process_repository wesley-dean/example
 ## @endcode
 process_repository() {
   local repository="$1"
@@ -1690,29 +1714,28 @@ process_repository() {
 }
 
 ## @fn create_git_askpass()
-## @brief Creates the private temporary GIT_ASKPASS helper used for HTTPS token authentication.
+## @brief Creates the temporary Git HTTPS credential helper.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## A shell or filesystem error may be propagated.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
-## @retval 0 The helper was created.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 The private executable helper was created.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## create_git_askpass
 ## @endcode
 create_git_askpass() {
   cat >"${GIT_ASKPASS}" <<'ASKPASS'
@@ -1737,29 +1760,28 @@ ASKPASS
 }
 
 ## @fn create_allowed_signers_file()
-## @brief Builds the temporary SSH allowed-signers file from the configured public key or derived key.
+## @brief Creates the temporary SSH allowed-signers file.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Nothing is read from STDIN.
 ## @par STDOUT
 ## Nothing is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## ssh-keygen or filesystem failures may be propagated.
 ##
 ## @returns Nothing is written to STDOUT.
 ##
 ## @retval 0 The allowed-signers file was created.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## create_allowed_signers_file
 ## @endcode
 create_allowed_signers_file() {
   local public_key
@@ -1775,30 +1797,30 @@ create_allowed_signers_file() {
 }
 
 ## @fn main()
-## @brief Coordinates configuration precedence, temporary state, repository processing, reporting, and final status.
+## @brief Coordinates configuration, temporary state, and command execution.
 ## @details
-## This function preserves a narrow, inspectable part of the command contract.
-## Caller-controlled values are handled as data and must not be evaluated as
-## shell source.  Security-sensitive callers rely on failures remaining visible
-## rather than silently falling back to broader behavior.
+## This function is part of the command's maintained contract.  Inputs are
+## handled as data and are not evaluated as shell source.  Callers rely on its
+## documented stream separation and fail-closed behavior.
+##
+## @param args[] Command-line arguments supplied to the executable.
 ##
 ## @par STDIN
-## Nothing is read from STDIN unless the function description explicitly says so.
+## Repository identifiers may be read when the command supports piped input.
 ## @par STDOUT
-## Repository data or signing progress according to the command's public contract.
+## The command-specific data or progress contract is written to STDOUT.
 ## @par STDERR
-## Diagnostics may be written when validation or an external command fails.
+## Diagnostics are written to STDERR.
 ##
-## @returns Repository data or signing progress according to the command's public contract.
+## @returns Command-specific output as documented by the executable contract.
 ##
-## @retval 0 The command completed without policy or repository failures.
-## @retval 1 One or more branches or repositories failed.
-## @note Additional non-zero statuses from subordinate Git, gh, ssh-keygen,
-## awk, grep, or shell operations may be propagated where they are not translated.
+## @retval 0 The command completed without a reported failure.
+## @note Non-zero statuses from subordinate commands may be propagated when
+## they are not explicitly translated by this function.
 ##
 ## @par Examples
 ## @code
-## # Exercised through the command's Bats unit and behavior suites.
+## main --help
 ## @endcode
 main() {
   capture_process_environment
