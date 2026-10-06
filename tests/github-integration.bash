@@ -8,7 +8,9 @@
 ## the pull-request branch itself.  It deliberately generates an ephemeral SSH
 ## signing key because configuration validation and allowed-signers generation
 ## are part of the production path even though --dry-run prevents rewriting and
-## pushing commits.
+## pushing commits.  The test intentionally uses an agent identity that does not
+## match the pull-request tip so production signatures made by another key are
+## treated as a safe ownership boundary rather than as signatures to verify.
 ##
 ## The caller supplies the exact branch to inspect.  This keeps the live test
 ## narrow and prevents unrelated repositories or branches from affecting the
@@ -59,12 +61,12 @@ output="$(
     "$resign_commits" \
       --owner "$owner" \
       --branch-pattern "$branch" \
-      --agent-name "Wesley Dean's Agent" \
-      --agent-email "wesley-dean-agent@wesleydean.com" \
+      --agent-name "resign-agent-commits CI" \
+      --agent-email "resign-agent-commits-ci@example.invalid" \
       --signing-key "$signing_key" \
       --dry-run
 )"
 
 grep -Fq "Repository: $repository" <<<"$output"
 grep -Fq "$branch" <<<"$output"
-grep -Eq 'WOULD_SIGN|ALREADY_SIGNED|NO_UNIQUE_COMMITS' <<<"$output"
+grep -Fq 'HUMAN_BOUNDARY' <<<"$output"
