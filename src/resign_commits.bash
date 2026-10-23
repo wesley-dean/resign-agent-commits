@@ -1567,7 +1567,7 @@ process_branch() {
 
   git rebase \
     --force-rebase \
-    --exec 'git commit --amend --no-edit -S' \
+    --exec 'git commit --amend --no-edit -S --allow-empty' \
     "${suffix_base}"
 
   if ! verify_rewritten_history "${suffix_base}"; then
