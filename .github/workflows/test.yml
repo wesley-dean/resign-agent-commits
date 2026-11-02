@@ -127,7 +127,7 @@ jobs:
         run: make test-report VERSION=0.0.0-ci
 
       - name: Publish Bats test results
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a
         if: always() && (steps.bats.outcome == 'success' || steps.bats.outcome == 'failure')
         with:
           name: Bats tests
