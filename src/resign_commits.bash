@@ -1544,6 +1544,7 @@ process_branch() {
   local base
   local suffix_base
   local tip_boundary
+  local tip_short_sha
   local remote_head
   local new_head
   local commit_count
@@ -1591,15 +1592,17 @@ process_branch() {
       return 0
     fi
 
+    tip_short_sha="$(git rev-parse --short "${expected_head}")"
+
     case "${tip_boundary}" in
       MERGE_BOUNDARY)
         report_result "MERGE_BOUNDARY" "${branch}" \
-          "tip is a merge commit; merge history is not rewritten"
+          "tip ${tip_short_sha} is a merge commit; merge history is not rewritten"
         ((MERGE_BOUNDARY_BRANCHES += 1))
         ;;
       HUMAN_BOUNDARY)
         report_result "HUMAN_BOUNDARY" "${branch}" \
-          "tip has a non-agent author or committer"
+          "tip ${tip_short_sha} has a non-agent author or committer"
         ((HUMAN_BOUNDARY_BRANCHES += 1))
         ;;
       *)
