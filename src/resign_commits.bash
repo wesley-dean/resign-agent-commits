@@ -1307,6 +1307,52 @@ verify_commit() {
   git verify-commit "${commit}" >/dev/null 2>&1
 }
 
+## @fn classify_tip_boundary()
+## @brief Names the structural reason a branch tip is ineligible for signing.
+## @details
+## This function is called only after suffix discovery found no eligible
+## single-parent agent suffix.  A multi-parent tip is always a merge boundary,
+## regardless of its author or committer email.  A single-parent tip in this
+## context is a non-agent boundary; a root tip is unexpected unique history.
+## This classification grants no rewrite permission and does not infer identity
+## from a branch name.  The result is emitted as data without diagnostics.
+##
+## @param head Branch-tip commit SHA to inspect.
+##
+## @par STDIN
+## Nothing is read from STDIN.
+## @par STDOUT
+## Exactly one boundary classification on success.
+## @par STDERR
+## Git object lookup failures may be written by subordinate commands.
+##
+## @returns One line: MERGE_BOUNDARY, HUMAN_BOUNDARY, or ROOT_BOUNDARY.
+##
+## @retval 0 The commit topology was classified.
+## @note Git command failures may propagate a nonzero status.
+##
+## @par Examples
+## @code
+## boundary="$(classify_tip_boundary HEAD)"
+## @endcode
+classify_tip_boundary() {
+  local head="$1"
+  local parent_count
+
+  parent_count="$(
+    git rev-list --parents -n 1 "${head}" |
+      awk '{ print NF - 1 }'
+  )"
+
+  if ((parent_count > 1)); then
+    printf '%s\n' MERGE_BOUNDARY
+  elif ((parent_count == 1)); then
+    printf '%s\n' HUMAN_BOUNDARY
+  else
+    printf '%s\n' ROOT_BOUNDARY
+  fi
+}
+
 ## @fn find_agent_suffix_base()
 ## @brief Finds the base of the contiguous agent-owned branch-tip suffix.
 ## @details
@@ -1357,7 +1403,7 @@ find_agent_suffix_base() {
     )"
 
     if ((parent_count != 1)); then
-      debug "${commit}: merge commit is a signing boundary"
+      debug "${commit}: non-single-parent history is a signing boundary"
       break
     fi
 
@@ -1497,6 +1543,7 @@ process_branch() {
   local expected_head="$4"
   local base
   local suffix_base
+  local tip_boundary
   local remote_head
   local new_head
   local commit_count
@@ -1536,9 +1583,36 @@ process_branch() {
   fi
 
   if [[ -z "${suffix_base}" ]]; then
-    report_result "HUMAN_BOUNDARY" "${branch}" "tip is not agent-owned"
+    if ! tip_boundary="$(classify_tip_boundary "${expected_head}")"; then
+      error "${repository}:${branch}: unable to classify branch-tip history"
+      report_result "POLICY_REJECTED" "${branch}" "unable to classify branch tip"
+      ((FAILED_BRANCHES += 1))
+      ((POLICY_REJECTED_BRANCHES += 1))
+      return 0
+    fi
+
+    case "${tip_boundary}" in
+      MERGE_BOUNDARY)
+        report_result "MERGE_BOUNDARY" "${branch}" \
+          "tip is a merge commit; merge history is not rewritten"
+        ((MERGE_BOUNDARY_BRANCHES += 1))
+        ;;
+      HUMAN_BOUNDARY)
+        report_result "HUMAN_BOUNDARY" "${branch}" \
+          "tip has a non-agent author or committer"
+        ((HUMAN_BOUNDARY_BRANCHES += 1))
+        ;;
+      *)
+        error "${repository}:${branch}: unexpected branch-tip topology"
+        report_result "POLICY_REJECTED" "${branch}" \
+          "unexpected root or invalid branch-tip history"
+        ((FAILED_BRANCHES += 1))
+        ((POLICY_REJECTED_BRANCHES += 1))
+        return 0
+        ;;
+    esac
+
     ((SKIPPED_BRANCHES += 1))
-    ((HUMAN_BOUNDARY_BRANCHES += 1))
     return 0
   fi
 
@@ -1887,6 +1961,7 @@ main() {
   FAILED_REPOSITORIES=0
   ALREADY_SIGNED_BRANCHES=0
   HUMAN_BOUNDARY_BRANCHES=0
+  MERGE_BOUNDARY_BRANCHES=0
   RACE_SKIPPED_BRANCHES=0
   POLICY_REJECTED_BRANCHES=0
   NO_MATCHING_BRANCH_REPOSITORIES=0
@@ -1900,9 +1975,10 @@ main() {
   printf '  Signed branches:            %d\n' "${SIGNED_BRANCHES}"
   printf '  Already signed branches:    %d\n' "${ALREADY_SIGNED_BRANCHES}"
   printf '  Human-boundary branches:    %d\n' "${HUMAN_BOUNDARY_BRANCHES}"
+  printf '  Merge-boundary branches:    %d\n' "${MERGE_BOUNDARY_BRANCHES}"
   printf '  Race-skipped branches:      %d\n' "${RACE_SKIPPED_BRANCHES}"
   printf '  Policy-rejected branches:   %d\n' "${POLICY_REJECTED_BRANCHES}"
-  printf '  Other skipped branches:     %d\n' "$((SKIPPED_BRANCHES - ALREADY_SIGNED_BRANCHES - HUMAN_BOUNDARY_BRANCHES - RACE_SKIPPED_BRANCHES))"
+  printf '  Other skipped branches:     %d\n' "$((SKIPPED_BRANCHES - ALREADY_SIGNED_BRANCHES - HUMAN_BOUNDARY_BRANCHES - MERGE_BOUNDARY_BRANCHES - RACE_SKIPPED_BRANCHES))"
   printf '  Repos without matching branch: %d\n' "${NO_MATCHING_BRANCH_REPOSITORIES}"
   printf '  Failed branches:            %d\n' "${FAILED_BRANCHES}"
   printf '  Failed repositories:        %d\n' "${FAILED_REPOSITORIES}"
