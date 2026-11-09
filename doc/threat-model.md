@@ -76,6 +76,24 @@ Threat: force rewriting crosses a human or merge boundary.
 Mitigation: eligibility stops at the first differently owned or multi-parent
 commit.  The signer never rewrites through that boundary.
 
+### Misleading success for blocked signing
+
+Threat: an unsigned agent-identified merge tip is silently treated as a benign
+boundary and CI reports signing success despite being unable to satisfy a
+protected branch's signature requirement.
+
+Mitigation: classify multi-parent tips separately from human-owned tips;
+when both declared email fields match the agent and the merge tip is unsigned,
+report `SIGNING_BLOCKED`, increment the failed-branch count, and return nonzero
+overall.  Do not rewrite the merge or weaken signing policy.  Existing
+signatures on agent-identified merge tips are verified before benign skipping.
+
+Residual risk: author and committer emails can be spoofed.  A forged
+agent-identified merge tip can cause an intentional failure/denial of service.
+A signed merge tip does not prove its ancestors were audited or signed.
+Operators remain responsible for enforcing branch protection and choosing a
+safe remediation path.
+
 ### Remote race
 
 Threat: the remote branch changes after inspection but before push.

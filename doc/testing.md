@@ -53,6 +53,17 @@ if forbidden behavior could still occur through another observable path.
 Threat-model findings should drive tests for important mitigations and residual
 boundaries where executable evidence is practical.  See `doc/threat-modeling.md`.
 
+## Regression Evidence for Signing Boundaries
+
+RAC's signing-boundary tests use temporary local Git repositories with bare
+remotes to reproduce real ancestry.  They distinguish multi-parent merge
+commits from single-parent human-authored tips, require unsigned
+agent-identified merge tips to fail the aggregate result without rewriting
+history, and confirm that non-agent boundaries remain safe skips.  Mixed
+branch batches must not report success when one branch cannot be signed.
+These negative assertions protect signing integrity and accurate CI outcomes
+without relying on live GitHub mutation.
+
 ## Artifact Matrix
 
 `make test` runs the suite against the development, stripped, and minified

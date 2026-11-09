@@ -51,9 +51,19 @@ the expected ancestry is rejected as unexpected history.  These classifications
 describe history topology and declared identity only; they neither authenticate
 the original author nor authorize rewriting across the boundary.
 
-In this version, both merge and human boundaries are benign skips, as before.
-A separate change may refine the failure result for an unsigned agent-identified
-merge tip; reporting the boundary does not establish that signing completed.
+An unsigned merge tip with both author and committer emails matching the
+configured agent identity reports `SIGNING_BLOCKED`.  RAC does not rewrite
+this history: the branch counts as a signing failure and the overall signer
+returns nonzero, even when other branches succeed.  Matching email fields
+are only identification metadata; they cannot authorize rewriting a merge.
+
+A merge tip with different author or committer identity remains a benign
+`MERGE_BOUNDARY` skip.  For an agent-identified merge tip with an existing
+signature, RAC verifies that signature; an invalid signature is a
+`POLICY_REJECTED` failure, while a valid tip remains a merge-boundary skip.
+Neither result asserts that every ancestor was signed.  Remediation for an
+unsigned agent-identified merge tip requires linear branch history or
+separately authorized manual handling under repository policy.
 
 If every eligible commit is already signed, the branch is a no-op.
 
