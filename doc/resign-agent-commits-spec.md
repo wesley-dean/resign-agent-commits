@@ -44,7 +44,16 @@ suffix must:
 - contain either no signature or a signature that verifies successfully.
 
 A differently owned commit or merge commit ends eligibility.  The signer never
-rewrites across that boundary.
+rewrites across that boundary.  When a tip has no eligible agent-owned suffix,
+RAC reports `MERGE_BOUNDARY` for a multi-parent tip and `HUMAN_BOUNDARY` for
+a single-parent tip with a non-agent author or committer.  A root tip outside
+the expected ancestry is rejected as unexpected history.  These classifications
+describe history topology and declared identity only; they neither authenticate
+the original author nor authorize rewriting across the boundary.
+
+In this version, both merge and human boundaries are benign skips, as before.
+A separate change may refine the failure result for an unsigned agent-identified
+merge tip; reporting the boundary does not establish that signing completed.
 
 If every eligible commit is already signed, the branch is a no-op.
 
