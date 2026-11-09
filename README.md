@@ -16,6 +16,15 @@ match the configured agent identity.  Human-owned and merge commits are hard
 boundaries.  Existing invalid signatures are rejected, remote state is rechecked
 before push, and updates use exact force-with-lease semantics.
 
+A multi-parent branch tip reports `MERGE_BOUNDARY` instead of being mistaken for
+a human-owned commit.  If the tip is unsigned and both its author and committer
+emails match the configured agent, RAC reports `SIGNING_BLOCKED` and the run
+finishes with a nonzero status.  This requires operator remediation; RAC does not
+sign or rewrite merge commits.  A signed merge tip with agent-matching email
+metadata must verify before it can remain a benign skip.  Matching emails alone
+do not authenticate the creator, and safe skip results do not audit ancestors.
+See ADR-019 for the exact failure policy and security tradeoffs.
+
 The normal composition is:
 
 ```bash

@@ -1512,7 +1512,10 @@ verify_rewritten_history() {
 ## @details
 ## This function is part of the command's maintained contract.  Inputs are
 ## handled as data and are not evaluated as shell source.  Callers rely on its
-## documented stream separation and fail-closed behavior.
+## documented stream separation and fail-closed behavior.  An unsigned
+## agent-identified merge tip cannot be safely rewritten under ADR-018 and
+## counts as a branch failure.  Email matching is not cryptographic proof of
+## who originally created that commit.
 ##
 ## @param repository Normalized OWNER/NAME repository identifier.
 ## @param default_branch Repository default branch name.
@@ -1545,6 +1548,8 @@ process_branch() {
   local suffix_base
   local tip_boundary
   local tip_short_sha
+  local tip_author
+  local tip_committer
   local remote_head
   local new_head
   local commit_count
@@ -1596,8 +1601,34 @@ process_branch() {
 
     case "${tip_boundary}" in
       MERGE_BOUNDARY)
-        report_result "MERGE_BOUNDARY" "${branch}" \
-          "tip ${tip_short_sha} is a merge commit; merge history is not rewritten"
+        tip_author="$(git show -s --format='%ae' "${expected_head}")"
+        tip_committer="$(git show -s --format='%ce' "${expected_head}")"
+        if [[ "${tip_author}" == "${AGENT_EMAIL}" &&
+              "${tip_committer}" == "${AGENT_EMAIL}" ]]; then
+          if ! commit_has_signature "${expected_head}"; then
+            warn "${repository}:${branch}: unsigned agent-identified merge tip"
+            report_result "SIGNING_BLOCKED" "${branch}" \
+              "unsigned merge tip ${tip_short_sha}; recreate linear history or resolve manually"
+            ((SIGNING_BLOCKED_BRANCHES += 1))
+            ((FAILED_BRANCHES += 1))
+            return 0
+          fi
+
+          if ! verify_commit "${expected_head}"; then
+            warn "${repository}:${branch}: merge-tip signature failed verification"
+            report_result "POLICY_REJECTED" "${branch}" \
+              "existing signature on merge tip ${tip_short_sha} failed verification"
+            ((FAILED_BRANCHES += 1))
+            ((POLICY_REJECTED_BRANCHES += 1))
+            return 0
+          fi
+
+          report_result "MERGE_BOUNDARY" "${branch}" \
+            "signed merge tip ${tip_short_sha}; ancestor history is not audited"
+        else
+          report_result "MERGE_BOUNDARY" "${branch}" \
+            "tip ${tip_short_sha} is a merge commit; merge history is not rewritten"
+        fi
         ((MERGE_BOUNDARY_BRANCHES += 1))
         ;;
       HUMAN_BOUNDARY)
@@ -1874,6 +1905,36 @@ create_allowed_signers_file() {
 ' "${AGENT_EMAIL}" "${public_key}" >"${ALLOWED_SIGNERS_FILE}"
 }
 
+## @fn signing_result_status()
+## @brief Reports whether any repository or branch failed signing.
+## @details
+## The caller aggregates separate repository and branch counters, including
+## signing-blocked branch tips.  A blocked merge tip increments FAILED_BRANCHES
+## even though no rewrite is attempted; this predicate therefore reports a
+## nonzero status for mixed batches with any such branch.
+##
+## @par STDIN
+## Nothing is read from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns Nothing is written to STDOUT.
+##
+## @retval 0 No branch or repository failure has been recorded.
+## @retval 1 At least one branch or repository failure has been recorded.
+##
+## @par Examples
+## @code
+## if ! signing_result_status; then
+##   return 1
+## fi
+## @endcode
+signing_result_status() {
+  ((FAILED_BRANCHES == 0 && FAILED_REPOSITORIES == 0))
+}
+
 ## @fn main()
 ## @brief Coordinates configuration, temporary state, and command execution.
 ## @details
@@ -1892,7 +1953,9 @@ create_allowed_signers_file() {
 ##
 ## @returns Command-specific output as documented by the executable contract.
 ##
-## @retval 0 The command completed without a reported failure.
+## @retval 0 No repository or branch failures or signing-blocked branches.
+## @retval 1 A repository or branch failed, including an unsigned
+## agent-identified merge tip that policy prohibits rewriting.
 ## @note Non-zero statuses from subordinate commands may be propagated when
 ## they are not explicitly translated by this function.
 ##
@@ -1965,6 +2028,7 @@ main() {
   ALREADY_SIGNED_BRANCHES=0
   HUMAN_BOUNDARY_BRANCHES=0
   MERGE_BOUNDARY_BRANCHES=0
+  SIGNING_BLOCKED_BRANCHES=0
   RACE_SKIPPED_BRANCHES=0
   POLICY_REJECTED_BRANCHES=0
   NO_MATCHING_BRANCH_REPOSITORIES=0
@@ -1979,6 +2043,7 @@ main() {
   printf '  Already signed branches:    %d\n' "${ALREADY_SIGNED_BRANCHES}"
   printf '  Human-boundary branches:    %d\n' "${HUMAN_BOUNDARY_BRANCHES}"
   printf '  Merge-boundary branches:    %d\n' "${MERGE_BOUNDARY_BRANCHES}"
+  printf '  Signing-blocked branches:   %d\n' "${SIGNING_BLOCKED_BRANCHES}"
   printf '  Race-skipped branches:      %d\n' "${RACE_SKIPPED_BRANCHES}"
   printf '  Policy-rejected branches:   %d\n' "${POLICY_REJECTED_BRANCHES}"
   printf '  Other skipped branches:     %d\n' "$((SKIPPED_BRANCHES - ALREADY_SIGNED_BRANCHES - HUMAN_BOUNDARY_BRANCHES - MERGE_BOUNDARY_BRANCHES - RACE_SKIPPED_BRANCHES))"
@@ -1986,7 +2051,7 @@ main() {
   printf '  Failed branches:            %d\n' "${FAILED_BRANCHES}"
   printf '  Failed repositories:        %d\n' "${FAILED_REPOSITORIES}"
 
-  if ((FAILED_BRANCHES > 0 || FAILED_REPOSITORIES > 0)); then
+  if ! signing_result_status; then
     return 1
   fi
 }

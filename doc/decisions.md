@@ -195,3 +195,16 @@ Builds produce three flavors of each command plus SHA-256 companions, while
 bashlog is fetched now but deliberately reserved for separate backlog work.
 
 See [ADR-018](adr/ADR-018-two-command-repository-discovery-and-commit-resigning-workflow.md).
+
+### ADR-019: Report Unsigned Agent-Identified Merge Tips as Signing-Blocked
+
+An unsigned merge tip with matching configured agent author and committer
+emails cannot be rewritten under ADR-018, and is now reported as
+`SIGNING_BLOCKED` rather than a successful boundary skip.  Such a branch
+causes a nonzero overall result even when other branches succeed, while
+non-agent merge tips remain safe skips.  Signed agent-identified merge tips
+must verify before a benign skip, and no result asserts that ancestor history
+is fully signed.  The decision intentionally refines ADR-018's reporting and
+exit-status behavior without expanding its signing authority.
+
+See [ADR-019](adr/ADR-019-report-unsigned-agent-merge-tips-as-signing-blocked.md).
