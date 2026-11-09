@@ -347,3 +347,99 @@ setup() {
   [[ "$output" == *ai/example* ]]
   [[ "$output" == *'old -> new'* ]]
 }
+
+@test "branch tip classification distinguishes root, single-parent, and merge history" {
+  require_function classify_tip_boundary
+  root="$BATS_TEST_TMPDIR/topology"
+  git init --quiet "$root"
+  (
+    cd "$root"
+    git config user.name Test
+    git config user.email agent@example.test
+    git commit --quiet --allow-empty -m root
+    run classify_tip_boundary HEAD
+    [ "$status" -eq 0 ]
+    [ "$output" = ROOT_BOUNDARY ]
+
+    git branch -M main
+    git checkout --quiet -b agent/merge
+    git commit --quiet --allow-empty -m agent
+    run classify_tip_boundary HEAD
+    [ "$status" -eq 0 ]
+    [ "$output" = HUMAN_BOUNDARY ]
+
+    git checkout --quiet main
+    git commit --quiet --allow-empty -m main-update
+    git checkout --quiet agent/merge
+    git merge --quiet --no-ff main -m merge-main
+    run classify_tip_boundary HEAD
+    [ "$status" -eq 0 ]
+    [ "$output" = MERGE_BOUNDARY ]
+  )
+}
+
+@test "agent-identified merge tip is reported as a merge boundary without rewriting" {
+  require_function process_branch
+  root="$BATS_TEST_TMPDIR/remote"
+  mkdir -p "$root"
+  make_temp_repo "$root" repo
+  (
+    cd "$root/work"
+    git checkout --quiet -b agent/merge-tip
+    git commit --quiet --allow-empty -m agent-work
+    git checkout --quiet main
+    git commit --quiet --allow-empty -m main-update
+    git push --quiet origin main
+    git checkout --quiet agent/merge-tip
+    git merge --quiet --no-ff main -m merge-main
+    expected_head="$(git rev-parse HEAD)"
+    git push --quiet origin agent/merge-tip
+
+    AGENT_EMAIL=agent@example.test
+    SKIPPED_BRANCHES=0
+    HUMAN_BOUNDARY_BRANCHES=0
+    MERGE_BOUNDARY_BRANCHES=0
+    FAILED_BRANCHES=0
+    POLICY_REJECTED_BRANCHES=0
+    process_branch example/repo main agent/merge-tip "$expected_head"
+    [ "$SKIPPED_BRANCHES" -eq 1 ]
+    [ "$MERGE_BOUNDARY_BRANCHES" -eq 1 ]
+    [ "$HUMAN_BOUNDARY_BRANCHES" -eq 0 ]
+    [ "$FAILED_BRANCHES" -eq 0 ]
+    [ "$(git rev-parse HEAD)" = "$expected_head" ]
+    [ "$(git ls-remote origin refs/heads/agent/merge-tip | cut -f1)" = "$expected_head" ]
+  ) >"$root/report"
+
+  grep -Fq 'MERGE_BOUNDARY' "$root/report"
+  ! grep -Fq 'HUMAN_BOUNDARY' "$root/report"
+}
+
+@test "human-authored single-parent tip keeps its distinct boundary result" {
+  require_function process_branch
+  root="$BATS_TEST_TMPDIR/remote-human"
+  mkdir -p "$root"
+  make_temp_repo "$root" repo
+  (
+    cd "$root/work"
+    git checkout --quiet -b agent/human-tip
+    git config user.email human@example.test
+    git commit --quiet --allow-empty -m human-change
+    expected_head="$(git rev-parse HEAD)"
+    git push --quiet origin agent/human-tip
+
+    AGENT_EMAIL=agent@example.test
+    SKIPPED_BRANCHES=0
+    HUMAN_BOUNDARY_BRANCHES=0
+    MERGE_BOUNDARY_BRANCHES=0
+    FAILED_BRANCHES=0
+    POLICY_REJECTED_BRANCHES=0
+    process_branch example/repo main agent/human-tip "$expected_head"
+    [ "$SKIPPED_BRANCHES" -eq 1 ]
+    [ "$HUMAN_BOUNDARY_BRANCHES" -eq 1 ]
+    [ "$MERGE_BOUNDARY_BRANCHES" -eq 0 ]
+    [ "$(git rev-parse HEAD)" = "$expected_head" ]
+  ) >"$root/report"
+
+  grep -Fq 'HUMAN_BOUNDARY' "$root/report"
+  ! grep -Fq 'MERGE_BOUNDARY' "$root/report"
+}
