@@ -378,8 +378,9 @@ setup() {
   )
 }
 
-@test "agent-identified merge tip is reported as a merge boundary without rewriting" {
+@test "unsigned agent-identified merge tip blocks signing without rewriting" {
   require_function process_branch
+  require_function signing_result_status
   root="$BATS_TEST_TMPDIR/remote"
   mkdir -p "$root"
   make_temp_repo "$root" repo
@@ -399,18 +400,23 @@ setup() {
     SKIPPED_BRANCHES=0
     HUMAN_BOUNDARY_BRANCHES=0
     MERGE_BOUNDARY_BRANCHES=0
+    SIGNING_BLOCKED_BRANCHES=0
     FAILED_BRANCHES=0
+    FAILED_REPOSITORIES=0
     POLICY_REJECTED_BRANCHES=0
     process_branch example/repo main agent/merge-tip "$expected_head"
-    [ "$SKIPPED_BRANCHES" -eq 1 ]
-    [ "$MERGE_BOUNDARY_BRANCHES" -eq 1 ]
+    [ "$SKIPPED_BRANCHES" -eq 0 ]
+    [ "$MERGE_BOUNDARY_BRANCHES" -eq 0 ]
+    [ "$SIGNING_BLOCKED_BRANCHES" -eq 1 ]
     [ "$HUMAN_BOUNDARY_BRANCHES" -eq 0 ]
-    [ "$FAILED_BRANCHES" -eq 0 ]
+    [ "$FAILED_BRANCHES" -eq 1 ]
+    ! signing_result_status
     [ "$(git rev-parse HEAD)" = "$expected_head" ]
     [ "$(git ls-remote origin refs/heads/agent/merge-tip | cut -f1)" = "$expected_head" ]
   ) >"$root/report"
 
-  grep -Fq 'MERGE_BOUNDARY' "$root/report"
+  grep -Fq 'SIGNING_BLOCKED' "$root/report"
+  ! grep -Fq 'MERGE_BOUNDARY' "$root/report"
   ! grep -Fq 'HUMAN_BOUNDARY' "$root/report"
 }
 
