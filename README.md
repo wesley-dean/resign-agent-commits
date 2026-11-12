@@ -104,6 +104,17 @@ publishes that generated directory; it is not committed.
 The exact coding-standards release is recorded in [`.codingstandardrc`](.codingstandardrc)
 and materialized under `doc/standards/`.
 
+## Dependabot Maintenance
+
+Routine GitHub Actions dependency version updates remain weekly with a seven-day
+cooldown, grouping eligible major, minor, and patch changes under
+`actions-version-updates`. Security updates remain independent. Groups containing
+major upgrades require targeted manual review and remain excluded from the existing
+non-major-only auto-merge guard. The repository's signing credentials, release
+permissions, branch rewriting limits, and SSH verification boundaries are
+unchanged. Existing Dependabot PRs are not automatically superseded. See
+[ADR-020](doc/adr/ADR-020-consolidate-github-actions-dependabot-maintenance.md).
+
 ## License
 
 This project is dedicated to the public domain under CC0 1.0 Universal.

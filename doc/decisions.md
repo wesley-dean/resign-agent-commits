@@ -208,3 +208,14 @@ is fully signed.  The decision intentionally refines ADR-018's reporting and
 exit-status behavior without expanding its signing authority.
 
 See [ADR-019](adr/ADR-019-report-unsigned-agent-merge-tips-as-signing-blocked.md).
+
+### ADR-020: Consolidate GitHub Actions Dependabot Version Updates
+
+Routine GitHub Actions dependency version updates retain weekly scheduling and
+a seven-day cooldown while allowing eligible major, minor, and patch versions
+in one per-ecosystem group. Security updates remain independent; major-containing
+groups require manual review and remain excluded from non-major automatic merging.
+This policy does not alter signer credentials, signing and rewriting boundaries,
+release authorization, generated artifact contracts, or prior ADRs.
+
+See [ADR-020](adr/ADR-020-consolidate-github-actions-dependabot-maintenance.md).
