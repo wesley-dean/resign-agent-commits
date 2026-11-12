@@ -6,6 +6,12 @@ Before consequential work, read `README.md`, `doc/resign-agent-commits-spec.md`,
 `doc/decisions.md`, relevant ADRs under `doc/adr/`, `doc/threat-model.md`, and
 the adopted standards under `doc/standards/`.
 
+Applicable imported standards govern repository changes unless an Accepted local
+ADR or explicit repository policy refines them. General standards apply where
+relevant; language-specific standards apply only to maintained content in that
+language. Examples are illustrative. Do not edit the imported snapshot to encode
+local exceptions; reconcile governance through local ADRs.
+
 ## Product Shape
 
 The maintained runtime consists of `src/list_repos.bash` and
