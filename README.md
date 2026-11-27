@@ -104,16 +104,19 @@ publishes that generated directory; it is not committed.
 The exact coding-standards release is recorded in [`.codingstandardrc`](.codingstandardrc)
 and materialized under `doc/standards/`.
 
-## Dependabot Maintenance
+## Dependency Maintenance
 
-Routine GitHub Actions dependency version updates remain weekly with a seven-day
-cooldown, grouping eligible major, minor, and patch changes under
-`actions-version-updates`. Security updates remain independent. Groups containing
-major upgrades require targeted manual review and remain excluded from the existing
-non-major-only auto-merge guard. The repository's signing credentials, release
-permissions, branch rewriting limits, and SSH verification boundaries are
-unchanged. Existing Dependabot PRs are not automatically superseded. See
-[ADR-020](doc/adr/ADR-020-consolidate-github-actions-dependabot-maintenance.md).
+Routine GitHub Actions version updates are managed through the central
+Jenkins Renovate service, with explicit root `renovate.json` enrollment.
+Scheduled Dependabot version-update proposals are disabled by setting
+`open-pull-requests-limit: 0` while Dependabot security updates and
+vulnerability alerts remain separate. Existing `dependabot[bot]`-scoped
+non-major auto-merge behavior is retained for security PRs, without
+bypassing human code-owner approval or required CI for Renovate.
+
+Existing routine Dependabot PRs are retired with a migration reference.
+A merged configuration is not proof of a successful future Jenkins run.
+See [ADR-021](doc/adr/ADR-021-migrate-routine-dependency-updates-to-renovate.md).
 
 ## License
 
